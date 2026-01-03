@@ -1,0 +1,33 @@
+{
+  "name": "ecom-queue-svc",
+  "version": "1.0.0",
+  "private": "true",
+  "workspaces": [
+    "queue",
+    "database",
+    "utils"
+  ],
+  "description": "Queue service for managing eccomercce operations",
+  "homepage": "https://github.com/krsamir/ecom-queue-svc#readme",
+  "bugs": {
+    "url": "https://github.com/krsamir/ecom-queue-svc/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krsamir/ecom-queue-svc.git"
+  },
+  "license": "ISC",
+  "author": "Samir Kumar",
+  "type": "module",
+  "main": "./queue/index.js",
+  "scripts": {
+    "start": "node ./queue/index.js",
+    "dev": "nodemon ./queue/index.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
+    "prettier": "3.7.4"
+  }
+}
