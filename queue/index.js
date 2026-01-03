@@ -1,6 +1,18 @@
 import { RedisService } from "@ecom/services";
-import { EVENT_NAME, logger as logs } from "@ecom/utils";
+import {
+  CONSTANTS,
+  EVENT_NAME,
+  generateHash,
+  getConcatedValueFromObject,
+  logger as logs,
+  QUEUE_HANDLERS,
+} from "@ecom/utils";
 import { Worker } from "bullmq";
+import knex, {
+  ProductDraftService,
+  CostsDraftService,
+  StocksDraftService,
+} from "@ecom/database";
 
 import { fileURLToPath } from "url";
 
@@ -10,13 +22,39 @@ let logger = logs(__filename);
 const connection = RedisService.getRedisInstance();
 
 const worker = new Worker(
-  "product",
+  QUEUE_HANDLERS.PUBLISH_PRODUCTS,
   async (job) => {
-    if (job.name === EVENT_NAME.ADD_PRODUCT_FOR_PUBLISH) {
+    const { name, data } = job;
+    if (name === EVENT_NAME.ADD_PRODUCT_FOR_PUBLISH) {
+      const trx = await knex.transaction();
       try {
-        console.log(job.data);
-        console.log("name", job.name);
+        const { old_product_hash, product } =
+          await ProductDraftService.addHashAndChangeStatus({
+            id: data?.id,
+            trx,
+          });
+        const { old_costs_hash } =
+          await CostsDraftService.addHashAndChangeStatus({
+            id: product?.id,
+            trx,
+          });
+        const { old_stock_hash } =
+          await StocksDraftService.addHashAndChangeStatus({
+            id: product?.id,
+            trx,
+          });
+        const draftProductHash = generateHash(
+          JSON.stringify({
+            old_product_hash,
+            old_costs_hash,
+            old_stock_hash,
+          }),
+        );
+
+        trx.commit();
+        job.log(JSON.stringify({ old: draftProductHash }));
       } catch (error) {
+        trx.rollback();
         logger.error(error);
         throw error;
       }

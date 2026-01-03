@@ -12,6 +12,7 @@
   "dependencies": {
     "bullmq": "^5.66.4",
     "@ecom/services": "*",
-    "@ecom/utils": "*"
+    "@ecom/utils": "*",
+    "@ecom/database": "*"
   }
 }
