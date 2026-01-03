@@ -12,10 +12,10 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 let logger = logs(__filename);
 
-class CostsDraftService {
+class MediaDraftService {
   create({ payload = {}, returning = null }) {
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.COSTS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.MEDIA_DRAFT}`,
     ).insert({ ...payload });
 
     if (returning) {
@@ -27,7 +27,7 @@ class CostsDraftService {
 
   update({ payload = {}, where = {}, returning = null }) {
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.COSTS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.MEDIA_DRAFT}`,
     )
       .update({ ...payload })
       .where({ ...where });
@@ -41,7 +41,7 @@ class CostsDraftService {
 
   delete({ shouldDelete = true, where = {}, returning = null }) {
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.COSTS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.MEDIA_DRAFT}`,
     )
       .update({ is_deleted: shouldDelete })
       .where({ ...where });
@@ -57,7 +57,7 @@ class CostsDraftService {
     const isWhereAvailable = Object.entries(where)?.length > 0;
 
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.COSTS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.MEDIA_DRAFT}`,
     ).select(returning);
 
     if (isWhereAvailable) {
@@ -67,37 +67,30 @@ class CostsDraftService {
     return baseQuery;
   }
 
-  async getCostByProductIdWithMaxVersion({ id }) {
+  async getMediaByProductId({ id }) {
     try {
-      logger.info(
-        `CostsDraftService.getCostByProductIdWithMaxVersion called :`,
-      );
+      logger.info(`MediaDraftService.getMediaByProductId called :`);
 
-      return knex(`${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.COSTS_DRAFT}`)
+      return knex(`${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.MEDIA_DRAFT}`)
         .where({ product_id: id })
-        .andWhere("version", function () {
-          this.select(knex.raw("MAX(version)")).from(
-            `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.COSTS_DRAFT}`,
-          );
-        })
         .select("*");
     } catch (error) {
       logger.error(`
-        CostsDraftService.getCostByProductIdWithMaxVersion: Error occurred : ${inspect(error)}`);
+        MediaDraftService.getMediaByProductId: Error occurred : ${inspect(error)}`);
       throw error;
     }
   }
 
   async addHashAndChangeStatus({ id = null, trx = null }) {
     try {
-      logger.info(`CostsDraftService.addHashAndChangeStatus called :`);
+      logger.info(`MediaDraftService.addHashAndChangeStatus called :`);
       const arr = [];
-      const costs = await this.getCostByProductIdWithMaxVersion({
+      const medias = await this.getMediaByProductId({
         id,
       });
-      if (costs?.length > 0) {
-        for (let i = 0; i < costs.length; i++) {
-          const item = costs[i];
+      if (medias?.length > 0) {
+        for (let i = 0; i < medias.length; i++) {
+          const item = medias[i];
           const oldHash = generateHash(
             getConcatedValueFromObject({
               payload: item,
@@ -110,12 +103,12 @@ class CostsDraftService {
             payload: { hash: oldHash },
           }).transacting(trx);
         }
-        return { old_costs_hash: arr, costs };
+        return { old_media_hash: arr, media: medias };
       }
-      return { old_costs_hash: [], costs };
+      return { old_media_hash: [], media: medias };
     } catch (error) {
       logger.error(`
-          CostsDraftService.addHashAndChangeStatus: Error occurred : ${inspect(error)}`);
+          MediaDraftService.addHashAndChangeStatus: Error occurred : ${inspect(error)}`);
       throw error;
     }
   }
@@ -123,19 +116,18 @@ class CostsDraftService {
   getHashKeyIds() {
     return [
       "id",
-      "min_qty",
-      "max_qty",
-      "purchase_cost",
-      "cost_for_sell",
-      "actual_cost",
-      "currency",
-      "valid_from",
-      "valid_to",
-      "version",
+      "original_name",
+      "file_name",
+      "path",
+      "size",
+      "mime_type",
+      "sequence",
+      "is_active",
+      "is_draft",
       "entity_id",
       "product_id",
     ];
   }
 }
 
-export default new CostsDraftService();
+export default new MediaDraftService();

@@ -10,6 +10,7 @@ import knex, {
   ProductDraftService,
   CostsDraftService,
   StocksDraftService,
+  MediaDraftService,
 } from "@ecom/database";
 
 import { fileURLToPath } from "url";
@@ -41,11 +42,18 @@ const worker = new Worker(
             id: product?.id,
             trx,
           });
+        const { old_media_hash } =
+          await MediaDraftService.addHashAndChangeStatus({
+            id: data?.id,
+            trx,
+          });
+
         const draftProductHash = generateHash(
           JSON.stringify({
             old_product_hash,
             old_costs_hash,
             old_stock_hash,
+            old_media_hash,
           }),
         );
 

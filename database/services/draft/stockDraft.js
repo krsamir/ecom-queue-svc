@@ -86,7 +86,7 @@ class StocksDraftService {
 
   async addHashAndChangeStatus({ id = null, trx = null }) {
     try {
-      logger.info(`ProductDraftService.addHashAndChangeStatus called :`);
+      logger.info(`StocksDraftService.addHashAndChangeStatus called :`);
       const stock = await this.getLatestStockByProductId({
         id,
       });
@@ -108,7 +108,7 @@ class StocksDraftService {
       return { old_stock_hash: [], stock: null };
     } catch (error) {
       logger.error(`
-          ProductDraftService.addHashAndChangeStatus: Error occurred : ${inspect(error)}`);
+          StocksDraftService.addHashAndChangeStatus: Error occurred : ${inspect(error)}`);
       throw error;
     }
   }
