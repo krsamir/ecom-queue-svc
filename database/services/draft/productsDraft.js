@@ -5,17 +5,17 @@ import {
   generateHash,
   getConcatedValueFromObject,
 } from "@ecom/utils";
-import knex from "../knexClient.js";
+import knex from "../../knexClient.js";
 import { inspect } from "util";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 let logger = logs(__filename);
 
-class StocksDraftService {
+class ProductDraftService {
   create({ payload = {}, returning = null }) {
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.STOCKS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.PRODUCTS_DRAFT}`,
     ).insert({ ...payload });
 
     if (returning) {
@@ -27,7 +27,7 @@ class StocksDraftService {
 
   update({ payload = {}, where = {}, returning = null }) {
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.STOCKS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.PRODUCTS_DRAFT}`,
     )
       .update({ ...payload })
       .where({ ...where });
@@ -41,7 +41,7 @@ class StocksDraftService {
 
   delete({ shouldDelete = true, where = {}, returning = null }) {
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.STOCKS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.PRODUCTS_DRAFT}`,
     )
       .update({ is_deleted: shouldDelete })
       .where({ ...where });
@@ -57,7 +57,7 @@ class StocksDraftService {
     const isWhereAvailable = Object.entries(where)?.length > 0;
 
     const baseQuery = knex(
-      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.STOCKS_DRAFT}`,
+      `${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.PRODUCTS_DRAFT}`,
     ).select(returning);
 
     if (isWhereAvailable) {
@@ -67,19 +67,24 @@ class StocksDraftService {
     return baseQuery;
   }
 
-  async getLatestStockByProductId({ id }) {
+  async getProductById({ id = null }) {
     try {
-      logger.info(`StocksDraftService.getLatestStockByProductId called :`);
-
-      return knex(`${ENVIRONMENT.KNEX_SCHEMA}.${CONSTANTS.TABLES.STOCKS_DRAFT}`)
-        .where({ product_id: id })
-        .orderBy("created_at", "desc")
-        .limit(1)
-        .select("*")
-        .first();
+      logger.info(`ProductDraftService.getProductById called :`);
+      return this.get({ where: { uuid: id } }).first();
     } catch (error) {
       logger.error(`
-        StocksDraftService.getLatestStockByProductId: Error occurred : ${inspect(error)}`);
+        ProductDraftService.getProductById: Error occurred : ${inspect(error)}`);
+      throw error;
+    }
+  }
+
+  async updateProductById({ id, payload = null, trx = null }) {
+    try {
+      logger.info(`ProductDraftService.updateProductById called :`);
+      return this.update({ where: { uuid: id }, payload }).transacting(trx);
+    } catch (error) {
+      logger.error(`
+        ProductDraftService.updateProductById: Error occurred : ${inspect(error)}`);
       throw error;
     }
   }
@@ -87,28 +92,31 @@ class StocksDraftService {
   async addHashAndChangeStatus({ id = null, trx = null }) {
     try {
       logger.info(`ProductDraftService.addHashAndChangeStatus called :`);
-      const stock = await this.getLatestStockByProductId({
+      const product = await this.getProductById({
         id,
       });
-      if (stock?.id) {
+      if (product) {
         const oldHash = generateHash(
           getConcatedValueFromObject({
-            payload: stock,
+            payload: product,
             keys: this.getHashKeyIds(),
           }),
         );
-
-        await this.update({
-          where: { id: stock.id },
-          payload: { hash: oldHash },
-        }).transacting(trx);
-        return { old_stock_hash: oldHash, stock };
+        //
+        await this.updateProductById({
+          id,
+          payload: {
+            hash: oldHash,
+            status: CONSTANTS.PRODUCT_WORKFLOW.PENDING,
+          },
+          trx,
+        });
+        return { old_product_hash: oldHash, product };
       }
-
-      return { old_stock_hash: [], stock: null };
+      return { old_product_hash: null, product };
     } catch (error) {
       logger.error(`
-          ProductDraftService.addHashAndChangeStatus: Error occurred : ${inspect(error)}`);
+        ProductDraftService.addHashAndChangeStatus: Error occurred : ${inspect(error)}`);
       throw error;
     }
   }
@@ -116,14 +124,19 @@ class StocksDraftService {
   getHashKeyIds() {
     return [
       "id",
-      "quantity_available",
-      "reorder_level",
-      "supplier_name",
-      "source",
+      "uuid",
+      "name",
+      "hindi_name",
+      "description",
+      "barcode",
+      "unit",
+      "hsn_id",
+      "unit_type",
       "entity_id",
-      "product_id",
+      "is_active",
+      "is_deleted",
     ];
   }
 }
 
-export default new StocksDraftService();
+export default new ProductDraftService();

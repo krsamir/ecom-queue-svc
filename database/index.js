@@ -1,7 +1,7 @@
-import ProductDraftService from "./services/productsDraft.js";
-import CostsDraftService from "./services/costsDraft.js";
+import ProductDraftService from "./services/draft/productsDraft.js";
+import CostsDraftService from "./services/draft/costsDraft.js";
 import ProductService from "./services/products.js";
-import StocksDraftService from "./services/stockDraft.js";
+import StocksDraftService from "./services/draft/stockDraft.js";
 import knex from "./knexClient.js";
 
 export {

@@ -5,7 +5,7 @@ import {
   generateHash,
   getConcatedValueFromObject,
 } from "@ecom/utils";
-import knex from "../knexClient.js";
+import knex from "../../knexClient.js";
 import { inspect } from "util";
 import { fileURLToPath } from "url";
 

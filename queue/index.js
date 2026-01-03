@@ -1,9 +1,7 @@
 import { RedisService } from "@ecom/services";
 import {
-  CONSTANTS,
   EVENT_NAME,
   generateHash,
-  getConcatedValueFromObject,
   logger as logs,
   QUEUE_HANDLERS,
 } from "@ecom/utils";
