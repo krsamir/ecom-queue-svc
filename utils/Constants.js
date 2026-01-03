@@ -47,4 +47,8 @@ const CONSTANTS = Object.freeze({
   },
 });
 
-export { CONSTANTS };
+const EVENT_NAME = Object.freeze({
+  ADD_PRODUCT_FOR_PUBLISH: "ADD_PRODUCT_FOR_PUBLISH",
+});
+
+export { CONSTANTS, EVENT_NAME };

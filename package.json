@@ -5,7 +5,8 @@
   "workspaces": [
     "queue",
     "database",
-    "utils"
+    "utils",
+    "services"
   ],
   "description": "Queue service for managing eccomercce operations",
   "homepage": "https://github.com/krsamir/ecom-queue-svc#readme",
