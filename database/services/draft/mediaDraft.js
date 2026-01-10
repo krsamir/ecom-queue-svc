@@ -123,7 +123,6 @@ class MediaDraftService {
       "mime_type",
       "sequence",
       "is_active",
-      "is_draft",
       "entity_id",
       "product_id",
     ];

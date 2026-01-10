@@ -1,4 +1,10 @@
-import { ENVIRONMENT, logger as logs, CONSTANTS } from "@ecom/utils";
+import {
+  ENVIRONMENT,
+  logger as logs,
+  CONSTANTS,
+  generateHash,
+  getConcatedValueFromObject,
+} from "@ecom/utils";
 import knex from "../knexClient.js";
 import { inspect } from "util";
 import { fileURLToPath } from "url";
@@ -59,6 +65,71 @@ class ProductService {
     }
 
     return baseQuery;
+  }
+
+  async upsert({ payload, trx }) {
+    try {
+      logger.info(`ProductService.upsert called :`);
+      const hash = generateHash(
+        getConcatedValueFromObject({ payload, keys: this.getHashKeyIds() }),
+      );
+      await this.create({
+        payload: {
+          id: payload.id,
+          uuid: payload.uuid,
+          name: payload.name,
+          hindi_name: payload.hindi_name,
+          description: payload.description,
+          barcode: payload.barcode,
+          unit: payload.unit,
+          hsn_id: payload.hsn_id,
+          unit_type: payload.unit_type,
+          entity_id: payload.entity_id,
+          is_active: payload.is_active,
+          is_deleted: payload.is_deleted,
+          hash,
+        },
+      })
+        .onConflict("id")
+        .merge(this.getUpsertKeys())
+        .transacting(trx);
+
+      return { product_hash: hash };
+    } catch (error) {
+      logger.error(`
+            ProductService.upsert: Error occurred : ${inspect(error)}`);
+      throw error;
+    }
+  }
+  getHashKeyIds() {
+    return [
+      "id",
+      "uuid",
+      "name",
+      "hindi_name",
+      "description",
+      "barcode",
+      "unit",
+      "hsn_id",
+      "unit_type",
+      "entity_id",
+      "is_active",
+      "is_deleted",
+    ];
+  }
+  getUpsertKeys() {
+    return [
+      "name",
+      "hindi_name",
+      "description",
+      "barcode",
+      "unit",
+      "hsn_id",
+      "unit_type",
+      "entity_id",
+      "is_active",
+      "is_deleted",
+    ];
   }
 }
 
