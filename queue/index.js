@@ -1,5 +1,6 @@
 import { RedisService } from "@ecom/services";
 import {
+  CONSTANTS,
   EVENT_NAME,
   generateHash,
   logger as logs,
@@ -137,6 +138,11 @@ const worker = new Worker(
           where: { uuid: data?.id },
         });
 
+        await ProductDraftService.update({
+          payload: { status: CONSTANTS.PRODUCT_WORKFLOW.COMPLETED },
+          where: { uuid: data?.id },
+        });
+
         job.log(
           JSON.stringify({
             old: draftProductHash,
@@ -151,6 +157,10 @@ const worker = new Worker(
         };
       } catch (error) {
         trx.rollback();
+        await ProductDraftService.update({
+          payload: { status: CONSTANTS.PRODUCT_WORKFLOW.FAILED },
+          where: { uuid: data?.id },
+        });
         logger.error(error);
         throw error;
       }
