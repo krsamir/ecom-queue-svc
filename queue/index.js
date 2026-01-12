@@ -125,6 +125,7 @@ const worker = new Worker(
           new: newProductHash,
           old: draftProductHash,
           synced: draft?.hash === published?.hash,
+          productId: data?.id,
         });
 
         if (draft?.hash !== published?.hash) {
@@ -148,12 +149,14 @@ const worker = new Worker(
             old: draftProductHash,
             new: newProductHash,
             synced: draft?.hash === published?.hash,
+            productId: data?.id,
           }),
         );
         return {
           old: draftProductHash,
           new: newProductHash,
           synced: draft?.hash === published?.hash,
+          productId: data?.id,
         };
       } catch (error) {
         trx.rollback();
