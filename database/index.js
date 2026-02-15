@@ -6,6 +6,7 @@ import ProductService from "./services/products.js";
 import StockService from "./services/stocks.js";
 import CostsService from "./services/costs.js";
 import MediaService from "./services/media.js";
+import CategoriesService from "./services/categories.js";
 import knex from "./knexClient.js";
 
 export {
@@ -17,5 +18,6 @@ export {
   StockService,
   CostsService,
   MediaService,
+  CategoriesService,
 };
 export default knex;

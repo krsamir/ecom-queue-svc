@@ -38,6 +38,10 @@ const CONSTANTS = Object.freeze({
     PRODUCTS_DRAFT: "products_draft",
     MEDIA: "media",
     MEDIA_DRAFT: "media_draft",
+    CATEGORIES: "categories",
+    CATEGORIES_DRAFT: "categories_draft",
+    CATEGORIES_PRODUCT_MAPPER: "categories_product_mapper",
+    CATEGORIES_PRODUCT_MAPPER_DRAFT: "categories_product_mapper_draft",
   },
   AUTHENTICATION: {
     TOKEN_VALIDITY_IN_MINS: 10,
@@ -51,6 +55,7 @@ const CONSTANTS = Object.freeze({
     FAILED: "FAILED",
     COMPLETED: "COMPLETED",
   },
+  CHUNK_SIZE: 10,
 });
 
 const QUEUE_HANDLERS = Object.freeze({
@@ -58,6 +63,7 @@ const QUEUE_HANDLERS = Object.freeze({
 });
 const EVENT_NAME = Object.freeze({
   ADD_PRODUCT_FOR_PUBLISH: "ADD_PRODUCT_FOR_PUBLISH",
+  SYNC_CATEGORIES_TABLE: "SYNC_CATEGORIES_TABLE",
 });
 
 export { CONSTANTS, EVENT_NAME, QUEUE_HANDLERS };

@@ -16,3 +16,11 @@ export const getConcatedValueFromObject = ({ payload = {}, keys = [] }) => {
     "",
   );
 };
+
+export const chunkArray = (arr = [], size = 10) => {
+  const val = [];
+  for (let i = 0; i < arr.length; i += size) {
+    val.push(arr.slice(i, i + size));
+  }
+  return val;
+};

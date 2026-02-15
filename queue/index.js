@@ -16,6 +16,7 @@ import knex, {
   CostsService,
   StockService,
   MediaService,
+  CategoriesService,
 } from "@ecom/database";
 
 import { fileURLToPath } from "url";
@@ -29,6 +30,31 @@ const worker = new Worker(
   QUEUE_HANDLERS.PUBLISH_PRODUCTS,
   async (job) => {
     const { name, data } = job;
+    if (name === EVENT_NAME.SYNC_CATEGORIES_TABLE) {
+      const trx1 = await knex.transaction();
+      const trx2 = await knex.transaction();
+
+      try {
+        await CategoriesService.truncateTable({ trx: trx1 });
+        trx1.commit();
+        const data = await CategoriesService.copyCategoriesTable({ trx: trx2 });
+
+        job.log(
+          JSON.stringify({
+            data,
+          }),
+        );
+        trx2.commit();
+        return {
+          data,
+        };
+      } catch (error) {
+        trx1.rollback();
+        trx2.rollback();
+        logger.error(error);
+        throw error;
+      }
+    }
     if (name === EVENT_NAME.ADD_PRODUCT_FOR_PUBLISH) {
       const trx = await knex.transaction();
       try {
